@@ -1,0 +1,53 @@
+version: '3'
+services:
+  jenkins:
+    container_name: jenkins
+    image: jenkins/jenkins
+    ports:
+      - "8080:8080"
+    volumes:
+      - $PWD/jenkins_home:/var/jenkins_home
+    networks:
+      - net
+  remote_host:
+    container_name: remote_host
+    image: remote-host
+    build:
+      context: centos7
+    networks:
+      - net
+  db_host:
+    container_name: db
+    image: mysql:5.7
+    environment:
+      - "MYSQL_ROOT_PASSWORD=1234"
+    volumes:
+      - $PWD/db_data:/var/lib/mysql
+    networks:
+      - net
+    command: "--innodb_use_native_aio=0"
+
+
+  gogs:
+    container_name: git-server-gogs
+    image: gogs/gogs:latest
+    ports:
+      - "10022:22"
+      - "3000:3000"
+    environment:
+      - "RUN_CROND=true"
+    volumes:
+      - "$PWD/gogs-data:/data"
+    networks:
+      - net
+    links:
+      - db_host
+    depends_on:
+      - db_host
+  
+networks:
+  net:
+
+
+
+
